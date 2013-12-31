@@ -167,7 +167,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.stagefright.enable-record=true
 
 ADDITIONAL_DEFAULT_PROPERTIES += \
-persist.sys.usb.config=mtp,adb
+persist.sys.usb.config=mtp,adb \
+ro.bq.gpu_to_cpu_unsupported=1
 
 # Extended JNI checks
 # The extended JNI checks will cause the system to run more slowly, but they can spot a variety of nasty bugs
