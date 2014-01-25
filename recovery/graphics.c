@@ -165,11 +165,7 @@ void gr_font_size(int *x, int *y)
     *x = gr_font->cwidth;
     *y = gr_font->cheight;
 }
-int gr_text(int x, int y, const char *s, ...)
-{
-    return gr_text_impl(x, y, s, 0);
-}
-int gr_text_impl(int x, int y, const char *s, int bold)
+int gr_text(int x, int y, const char *s, int bold)
 {
     GGLContext *gl = gr_context;
     GRFont *font = gr_font;
@@ -330,8 +326,7 @@ gr_pixel *gr_fb_data(void)
 void gr_fb_blank(bool blank)
 {
     int ret;
-
-    ret = ioctl(gr_fb_fd, FBIOBLANK, blank ? FB_BLANK_POWERDOWN : FB_BLANK_UNBLANK);
+    ret = ioctl(gr_fb_fd, FBIOBLANK, blank ? FB_BLANK_NORMAL : FB_BLANK_UNBLANK);
     if (ret < 0)
         perror("ioctl(): blank");
 }

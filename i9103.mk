@@ -10,7 +10,8 @@ PRODUCT_PACKAGES += \
     libnetcmdiface \
     com.android.future.usb.accessory \
     SamsungServiceMode \
-    OmniTorch
+    Torch \
+    FM
 
 # Will be removed soon
 PRODUCT_PACKAGES += DeviceSettings

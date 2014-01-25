@@ -5,6 +5,8 @@ on early-init
 
     write /sys/class/firmware/timeout 5
 
+    #ro.boot.selinux=permissive doesnt work, set permissive here
+    setenforce permissive
     export EXTERNAL_STORAGE /storage/sdcard0
     export SECONDARY_STORAGE /storage/sdcard1
 
@@ -12,7 +14,7 @@ on early-init
     mkdir /storage/sdcard0 0775 system system
     mkdir /storage/sdcard1 0775 system system
     mkdir /storage/usbdisk0 0775 system system
-    mkdir /storage/usbdisk1 0000 system system
+
     mkdir /efs 0771 radio system
     mkdir /preload 0771 system system
     mkdir /mnt 0775 root system
@@ -27,8 +29,8 @@ on early-init
     symlink /storage/sdcard0 /mnt/sdcard
     symlink /storage/sdcard1 /extSdCard
     symlink /storage/sdcard1 /mnt/extSdCard
-    symlink /storage/usbdisk0 /usbdisk0
-    symlink /storage/usbdisk0 /mnt/usbdisk0
+    symlink /storage/usbdisk0 /usbDisk
+    symlink /storage/usbdisk0 /mnt/usbDisk
     symlink /storage/sdcard1 /external_sd
 
 on fs
@@ -39,6 +41,7 @@ on fs
 
     mkdir /efs/bluetooth
     mkdir /efs/wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
     chown radio system /efs/bluetooth
     chown radio system /efs/wifi
     chmod 0775 /efs/bluetooth
@@ -52,7 +55,6 @@ on post-fs-data
 
     mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
     mkdir /data/nvcam 0775 media camera
@@ -90,17 +92,17 @@ on boot
 # bluetooth
     # UART device
     chmod 0660 /dev/ttyHS2
-    chown bluetooth net_bt_stack /dev/ttyHS2
+    chown bluetooth bluetooth /dev/ttyHS2
 
     # power up/down interface
     chmod 0660 /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/type
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
 
 # bluetooth MAC address programming
-    chown bluetooth net_bt_stack ro.bt.bdaddr_path
-    chown bluetooth net_bt_stack /system/etc/bluetooth
+    chown bluetooth bluetooth ro.bt.bdaddr_path
+    chown bluetooth bluetooth /system/etc/bluetooth
     setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
 
 # UART/USB path switching
@@ -217,8 +219,9 @@ on boot
     symlink /dev/ttyACM3 /dev/log_modem
 
 # Default Read Ahead value for sdcards
-#    write /sys/block/mmcblk0/queue/read_ahead_kb 2048
-#    write /sys/block/mmcblk1/queue/read_ahead_kb 2048
+    write /sys/block/mmcblk0/queue/read_ahead_kb 2048
+    write /sys/block/mmcblk1/queue/read_ahead_kb 2048
+    write /sys/kernel/dyn_fsync/Dyn_fsync_active 1
 
 # mute gc alloc/free in logcat (to move in system.prop)
     setprop dalvik.vm.debug.alloc 0
@@ -345,34 +348,27 @@ service cpboot-daemon /sbin/cbd -d -o t -p 7
     group radio cache inet misc audio log sdcard_rw qcom_oncrpc qcom_diag
 
 service p2p_supplicant /system/bin/wpa_supplicant \
-    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
-    -I/system/etc/wifi/wpa_supplicant.conf \
-    -O/data/misc/wifi/sockets -N \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -N \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin \
-    -I/system/etc/wifi/wpa_supplicant.conf \
-    -puse_p2p_group_interface=1 \
-    -g@android:wpa_wlan0
+    -puse_p2p_group_interface=1 -O/data/misc/wifi/sockets -g@android:wpa_wlan0
     # we will start as root and wpa_supplicant will switch to user wifi
     # after setting up the capabilities required for WEXT
     # user wifi
     # group wifi inet keystore
     class main
-    socket wpa_wlan0 dgram 660 wifi wifi u:object_r:wpa_socket:s0
+    socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
 
 service wpa_supplicant /system/bin/wpa_supplicant \
-   -Dnl80211 -iwlan0 -e/data/misc/wifi/entropy.bin \
-   -c/data/misc/wifi/wpa_supplicant.conf \
-   -I/system/etc/wifi/wpa_supplicant.conf \
-   -O/data/misc/wifi/sockets \
-   -g@android:wpa_wlan0
+    -Dnl80211 -iwlan0 -e/data/misc/wifi/entropy.bin \
+    -c/data/misc/wifi/wpa_supplicant.conf -O/data/misc/wifi/sockets -g@android:wpa_wlan0
     # we will start as root and wpa_supplicant will switch to user wifi
     # after setting up the capabilities required for WEXT
     # user wifi
     # group wifi inet keystore
     class main
-    socket wpa_wlan0 dgram 660 wifi wifi u:object_r:wpa_socket:s0
+    socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
 
@@ -438,15 +434,14 @@ on property:sys.boot_completed=1
     write /sys/module/cpuidle/parameters/lp2_in_idle 1
 #    stop nvcpud
 
-service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
+service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/sdcard0 /storage/sdcard0
     class late_start
     disabled
 
-service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
+service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/sdcard1 /storage/sdcard1
     class late_start
     disabled
 
-service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk0 /storage/usbdisk0
-     class late_start
-     disabled
-
+service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/usbdisk0 /storage/usbdisk0
+    class late_start
+    disabled
