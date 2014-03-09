@@ -23,6 +23,7 @@
 add_lunch_combo cm_i9103-eng
 add_lunch_combo full_i9103-eng
 add_lunch_combo cm_i9103-userdebug
+add_lunch_combo pac_i9103-userbebug
 
 echo "Apply patch to frameworks/base"
 echo -n "Apply patch 0001-framework-base-patch.patch"
