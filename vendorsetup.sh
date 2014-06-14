@@ -61,13 +61,22 @@ else
 	echo "     [FAIL]"
 fi
 
-echo "Apply patch to external/chromium_org"
-echo -n "Apply patch 0001-Work-around-broken-GL_TEXTURE_BINDING_EXTERNAL_OES-q.patch"
-(cd external/chromium_org; git am ../../device/samsung/i9103/patches/0001-Work-around-broken-GL_TEXTURE_BINDING_EXTERNAL_OES-q.patch) > /dev/null 2>&1
+echo "Apply patch to frameworks/native"
+echo -n "Apply patch 0001-Fix-layer-dump-for-tegra2.patch"
+(cd frameworks/native; git am ../../device/samsung/i9103/patches/0001-Fix-layer-dump-for-tegra2.patch) > /dev/null 2>&1
 if [ $? == 0 ]; then
-  echo "     [DONE]"
+       echo "     [DONE]"
 else
-  (cd external/chromium_org; git am --abort)
-  echo "     [FAIL]"
+       (cd frameworks/native; git am --abort)
+       echo "     [FAIL]"
 fi
 
+echo "Apply patch to bionic"
+echo -n "Apply patch 0003-Add-tegra2-to-bionic.patch"
+(cd bionic; git am ../device/samsung/i9103/patches/0003-Add-tegra2-to-bionic.patch) > /dev/null 2>&1
+if [ $? == 0 ]; then
+    echo "     [DONE]"
+else
+    (cd bionic; git am --abort)
+    echo "     [FAIL]"
+fi

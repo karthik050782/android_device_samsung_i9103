@@ -18,17 +18,19 @@ TARGET_SPECIFIC_HEADER_PATH := device/samsung/i9103/include
 # CPU
 TARGET_ARCH := arm
 TARGET_CPU_ABI := armeabi-v7a
+APP_ABI := armeabi-v7a 
 TARGET_CPU_ABI2 := armeabi
 TARGET_CPU_SMP := true
 TARGET_ARCH_VARIANT := armv7-a
 TARGET_ARCH_VARIANT_CPU := cortex-a9
-TARGET_CPU_VARIANT := generic
+TARGET_CPU_VARIANT := tegra2
 # Avoid the generation of ldrcc instructions
 NEED_WORKAROUND_CORTEX_A9_745320 := true
 # DO NOT change the following line to vfpv3 as it is not really supported on our device!
 TARGET_ARCH_VARIANT_FPU := vfpv3-d16
 ARCH_ARM_HAVE_TLS_REGISTER := true
 ARCH_ARM_USE_NON_NEON_MEMCPY := true
+ARCH_ARM_HAVE_NEON := false
 
 #TARGET_HAVE_TEGRA_ERRATA_657451 := true
 BOARD_VENDOR := samsung
@@ -67,10 +69,10 @@ BOARD_FLASH_BLOCK_SIZE := 4096
 # Use this flag if the board has a ext4 partition larger than 2gb
 BOARD_HAS_LARGE_FILESYSTEM := true
 
-TARGET_PREBUILT_KERNEL = device/samsung/i9103/kernel
+#TARGET_PREBUILT_KERNEL = device/samsung/i9103/kernel
 
-#TARGET_KERNEL_SOURCE := kernel/samsung/n1
-#TARGET_KERNEL_CONFIG := gk_i9103_defconfig
+TARGET_KERNEL_SOURCE := kernel/samsung/n1
+TARGET_KERNEL_CONFIG := gk_i9103_defconfig
 # TARGET_KERNEL_SELINUX_CONFIG := selinux_config
 # TARGET_KERNEL_TOOLCHAIN := prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-eabi-4.7/bin/arm-eabi-
 
@@ -95,9 +97,13 @@ BOARD_MOBILEDATA_INTERFACE_NAME := "rmnet0"
 
 # Audio
 BOARD_USES_GENERIC_AUDIO := false
+BOARD_USES_LIBSECRIL_STUB := false
 BOARD_USE_TINYALSA_AUDIO := true
-#COMMON_GLOBAL_CFLAGS += -DSTE_FM
-#BOARD_USES_STE_FMRADIO := true
+
+# FM Radio
+BOARD_HAVE_FM_RADIO := true
+BOARD_GLOBAL_CFLAGS += -DHAVE_FM_RADIO
+BOARD_FM_DEVICE := si4709
 
 # Camera
 BOARD_USES_PROPRIETARY_LIBCAMERA := true

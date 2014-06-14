@@ -13,6 +13,9 @@ PRODUCT_PACKAGES += \
     Torch \
     FM
 
+PRODUCT_COPY_FILES := \
+    device/samsung/i9103/asound.conf:system/etc/asound.conf
+
 # Will be removed soon
 PRODUCT_PACKAGES += DeviceSettings
 
@@ -21,6 +24,7 @@ PRODUCT_PACKAGES += anicharger
 
 # HAL
 PRODUCT_PACKAGES += \
+    audio.primary.n1 \
     sensors.n1 \
     lights.n1 \
     power.tegra \
@@ -28,7 +32,6 @@ PRODUCT_PACKAGES += \
     gralloc.tegra \
     hwcomposer.tegra \
     libsecril-client libsecril-client-sap \
-    audio.primary.n1 \
     audio.a2dp.default \
     audio.usb.default
 
@@ -81,6 +84,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio_policy.conf:system/etc/audio_policy.conf \
     $(LOCAL_PATH)/configs/tinyalsa-audio.xml:system/etc/tinyalsa-audio.xml
+#    $(LOCAL_PATH)/libaudio/audio_effects.conf:system/vendor/etc/audio_effects.conf 
 
 # Camera
 PRODUCT_COPY_FILES += \
